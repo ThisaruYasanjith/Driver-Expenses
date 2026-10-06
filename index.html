@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Driver Calculator</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Arial, sans-serif;
+        background: #f4f6f8;
+        color: #222;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .calculator {
+        width: 100%;
+        max-width: 450px;
+        background: white;
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+      }
+
+      h1 {
+        text-align: center;
+        margin: 0 0 25px;
+        font-size: 26px;
+      }
+
+      .input-group {
+        margin-bottom: 18px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        font-size: 15px;
+      }
+
+      input {
+        width: 100%;
+        padding: 14px;
+        border: 1px solid #d0d5da;
+        border-radius: 8px;
+        font-size: 18px;
+        outline: none;
+      }
+
+      input:focus {
+        border-color: #2563eb;
+      }
+
+      button {
+        width: 100%;
+        padding: 15px;
+        border: none;
+        border-radius: 8px;
+        background: #2563eb;
+        color: white;
+        font-size: 17px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 5px;
+      }
+
+      button:hover {
+        background: #1d4ed8;
+      }
+
+      .reset {
+        background: #6b7280;
+        margin-top: 10px;
+      }
+
+      .reset:hover {
+        background: #4b5563;
+      }
+
+      .results {
+        margin-top: 25px;
+        border-top: 1px solid #e5e7eb;
+        padding-top: 20px;
+      }
+
+      .result-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 13px 0;
+        border-bottom: 1px solid #eee;
+        gap: 15px;
+      }
+
+      .result-label {
+        color: #555;
+      }
+
+      .result-value {
+        font-weight: bold;
+        text-align: right;
+      }
+
+      .total {
+        font-size: 19px;
+      }
+
+      .commission {
+        color: #2563eb;
+      }
+
+      .salary {
+        color: #16a34a;
+      }
+
+      .final {
+        margin-top: 15px;
+        padding: 18px;
+        background: #eff6ff;
+        border-radius: 10px;
+        border: 2px solid #2563eb;
+      }
+
+      .final .result-label,
+      .final .result-value {
+        font-size: 20px;
+        font-weight: bold;
+        color: #2563eb;
+      }
+
+      .error {
+        color: #dc2626;
+        font-size: 14px;
+        margin-top: 10px;
+        display: none;
+      }
+
+      @media (max-width: 400px) {
+        .calculator {
+          padding: 20px;
+        }
+
+        h1 {
+          font-size: 23px;
+        }
+
+        input {
+          font-size: 16px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="calculator">
+      <h1>Driver Calculator</h1>
+
+      <div class="input-group">
+        <label for="cashierAmount">Cashier Amount (Rs.)</label>
+
+        <input
+          type="number"
+          id="cashierAmount"
+          placeholder="Enter cashier amount"
+          min="0"
+          step="0.01"
+        />
+      </div>
+
+      <div class="input-group">
+        <label for="highwayExpenses">Highway Expenses (Rs.)</label>
+
+        <input
+          type="number"
+          id="highwayExpenses"
+          placeholder="Enter highway expenses"
+          min="0"
+          step="0.01"
+        />
+      </div>
+
+      <button onclick="calculate()">Calculate</button>
+
+      <button class="reset" onclick="resetCalculator()">Reset</button>
+
+      <div id="error" class="error"></div>
+
+      <div class="results">
+        <div class="result-row total">
+          <span class="result-label">Total Amount</span>
+
+          <span class="result-value" id="total"> Rs. 0.00 </span>
+        </div>
+
+        <div class="result-row">
+          <span class="result-label">Commission (10%)</span>
+
+          <span class="result-value commission" id="commission">
+            Rs. 0.00
+          </span>
+        </div>
+
+        <div class="result-row">
+          <span class="result-label">Daily Salary</span>
+
+          <span class="result-value salary" id="salary"> Rs. 0.00 </span>
+        </div>
+
+        <!-- FINAL TOTAL -->
+        <div class="result-row final">
+          <span class="result-label">Final Amount</span>
+
+          <span class="result-value" id="finalAmount"> Rs. 0.00 </span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function formatCurrency(amount) {
+        return (
+          "Rs. " +
+          amount.toLocaleString("en-LK", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })
+        );
+      }
+
+      function calculate() {
+        const cashierAmount = parseFloat(
+          document.getElementById("cashierAmount").value,
+        );
+
+        const highwayExpenses = parseFloat(
+          document.getElementById("highwayExpenses").value,
+        );
+
+        const error = document.getElementById("error");
+
+        // Validate inputs
+        if (isNaN(cashierAmount) || isNaN(highwayExpenses)) {
+          error.textContent = "Please enter both amounts.";
+          error.style.display = "block";
+
+          return;
+        }
+
+        // Prevent negative values
+        if (cashierAmount < 0 || highwayExpenses < 0) {
+          error.textContent = "Amounts cannot be negative.";
+          error.style.display = "block";
+
+          return;
+        }
+
+        // Calculate total after expenses
+        const total = cashierAmount - highwayExpenses;
+
+        // Prevent negative total
+        if (total < 0) {
+          error.textContent =
+            "Highway expenses cannot be greater than the cashier amount.";
+
+          error.style.display = "block";
+
+          return;
+        }
+
+        error.style.display = "none";
+
+        // Commission = 10% of total
+        const commission = total * 0.1;
+
+        // Daily Salary
+        let salary;
+
+        if (total <= 25000) {
+          salary = 3000;
+        } else if (total <= 40000) {
+          salary = 4000;
+        } else {
+          salary = total * 0.05 + 3000;
+        }
+
+        // Final amount = Commission + Daily Salary
+        const finalAmount = commission + salary;
+
+        // Display results
+        document.getElementById("total").textContent = formatCurrency(total);
+
+        document.getElementById("commission").textContent =
+          formatCurrency(commission);
+
+        document.getElementById("salary").textContent = formatCurrency(salary);
+
+        document.getElementById("finalAmount").textContent =
+          formatCurrency(finalAmount);
+      }
+
+      function resetCalculator() {
+        document.getElementById("cashierAmount").value = "";
+        document.getElementById("highwayExpenses").value = "";
+
+        document.getElementById("total").textContent = "Rs. 0.00";
+
+        document.getElementById("commission").textContent = "Rs. 0.00";
+
+        document.getElementById("salary").textContent = "Rs. 0.00";
+
+        document.getElementById("finalAmount").textContent = "Rs. 0.00";
+
+        document.getElementById("error").style.display = "none";
+      }
+    </script>
+  </body>
+</html>
