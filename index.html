@@ -170,11 +170,10 @@
         <label for="cashierAmount">Cashier Amount (Rs.)</label>
 
         <input
-          type="number"
+          type="text"
           id="cashierAmount"
           placeholder="Enter cashier amount"
-          min="0"
-          step="0.01"
+          inputmode="decimal"
         />
       </div>
 
@@ -182,11 +181,10 @@
         <label for="highwayExpenses">Highway Expenses (Rs.)</label>
 
         <input
-          type="number"
+          type="text"
           id="highwayExpenses"
           placeholder="Enter highway expenses"
-          min="0"
-          step="0.01"
+          inputmode="decimal"
         />
       </div>
 
@@ -237,13 +235,50 @@
         );
       }
 
+      // Add commas while typing
+      function formatInputNumber(value) {
+        // Remove everything except numbers and decimal point
+        value = value.replace(/[^0-9.]/g, "");
+
+        // Allow only one decimal point
+        const parts = value.split(".");
+        const integerPart = parts[0];
+        const decimalPart = parts[1];
+
+        // Add commas to the integer part
+        const formattedInteger = integerPart.replace(
+          /\B(?=(\d{3})+(?!\d))/g,
+          ",",
+        );
+
+        if (decimalPart !== undefined) {
+          return formattedInteger + "." + decimalPart;
+        }
+
+        return formattedInteger;
+      }
+
+      // Format Cashier Amount while typing
+      document
+        .getElementById("cashierAmount")
+        .addEventListener("input", function () {
+          this.value = formatInputNumber(this.value);
+        });
+
+      // Format Highway Expenses while typing
+      document
+        .getElementById("highwayExpenses")
+        .addEventListener("input", function () {
+          this.value = formatInputNumber(this.value);
+        });
+
       function calculate() {
         const cashierAmount = parseFloat(
-          document.getElementById("cashierAmount").value,
+          document.getElementById("cashierAmount").value.replace(/,/g, ""),
         );
 
         const highwayExpenses = parseFloat(
-          document.getElementById("highwayExpenses").value,
+          document.getElementById("highwayExpenses").value.replace(/,/g, ""),
         );
 
         const error = document.getElementById("error");
